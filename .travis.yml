@@ -1,0 +1,12 @@
+language: python
+
+services: docker
+
+env:
+  global:
+    - IMAGE_NAME=a3c
+    - TAG=latest
+
+script:
+- docker build -t "$IMAGE_NAME":$TAG .
+
