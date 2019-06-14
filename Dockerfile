@@ -22,3 +22,6 @@ RUN conda install python=3.6
 
 # Install Dependencies
 RUN pip install -r requirements.txt
+
+# Install PyTorch Deep learning Framework
+RUN conda install pytorch-cpu torchvision-cpu -c pytorch

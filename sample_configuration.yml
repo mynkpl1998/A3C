@@ -1,0 +1,3 @@
+A3C_Config:
+  env_type: 'gym'
+  env_name: 'CartPole-v0'
