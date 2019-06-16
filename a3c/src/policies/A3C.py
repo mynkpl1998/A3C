@@ -53,6 +53,16 @@ class MLPPolicy(nn.Module):
         print("Actor Layer - ", self.linear_actor)
         
     def forward(self, observation, history):
+        '''
+        Function : Passes the observation through fully connected layer followed by
+        a recurrent layer, then calculates the value function (critic) and logits (actor)
+        
+        Arguments
+        observation : PyTorch Tensor of type (batch, obs_size)
+        history : PyTorch Tensor of type (batch, memsize)
+
+        '''
+
         self.fc_out = None
         for i, layer in enumerate(self.fc_dict):
             if(i == 0):
@@ -62,5 +72,3 @@ class MLPPolicy(nn.Module):
 
         self.hx_out = self.gru(self.fc_out, history)
         return self.linear_critic(self.hx_out), self.linear_actor(self.hx_out), self.hx_out
-
-    
