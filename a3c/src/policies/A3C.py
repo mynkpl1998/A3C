@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class ConvMLPPolicy(nn.Module):
 
@@ -66,9 +67,9 @@ class MLPPolicy(nn.Module):
         self.fc_out = None
         for i, layer in enumerate(self.fc_dict):
             if(i == 0):
-                self.fc_out = self.fc_dict[layer](observation)
+                self.fc_out = F.elu(self.fc_dict[layer](observation))
             else:
-                self.fc_out = self.fc_dict[layer](self.fc_out)
+                self.fc_out = F.elu(self.fc_dict[layer](self.fc_out))
 
         self.hx_out = self.gru(self.fc_out, history)
         return self.linear_critic(self.hx_out), self.linear_actor(self.hx_out), self.hx_out

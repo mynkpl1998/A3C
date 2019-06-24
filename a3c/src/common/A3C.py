@@ -16,7 +16,7 @@ def cost_func(args, values, logps, actions, rewards):
     Web Link : https://lilianweng.github.io/lil-log/assets/images/general_form_policy_gradient.png
     
     '''
-    delta_t = rewards + (args.getValue("gamma") * np_values[1:]) - np_values[:-1]
+    delta_t = np.asarray(rewards) + (args.getValue("gamma") * np_values[1:]) - np_values[:-1]
     logpys = logps.gather(1, torch.tensor(actions).view(-1,1))
     
     '''
@@ -41,6 +41,11 @@ def cost_func(args, values, logps, actions, rewards):
 
 def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shared_optimizer):
     
+    '''
+    Funtion : Creates an idependent copy of the environment (forked by train process). Each process interacts with the environment 
+    ,collects data and then updates its local copy which gets synced with shared model periodically.
+    '''
+
     env = None
 
     if(args.getValue("env_type") == "gym"):
@@ -58,12 +63,7 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
     state = torch.tensor(env.reset())
     episode_length, epr, eploss, done = 0, 0, 0, True
 
-    
-    while info["frames"] <= args.getValue("num_training_frames"):
-        
-        '''
-        At the start of training each env updates its local copy of weights from global copy    
-        '''
+    while info["frames"].item() <= args.getValue("num_training_frames"):
         
         model.load_state_dict(shared_model.state_dict())
         hx = torch.zeros(1, args.getValue("memsize")) if done else hx.detach()
@@ -83,6 +83,8 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
             
             state = torch.tensor(state)
             epr += reward
+            reward = np.clip(reward, 1, -1)
+            
             done = done or episode_length >= args.getValue("max_episode_length")
 
             if done:
@@ -90,7 +92,6 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
                 coef = 1 if info["episodes"][0] == 1 else (1 - args.getValue("moving_avg_coef"))
                 info["run_epr"].mul_(1 - coef).add_(coef * epr)
                 info["run_loss"].mul_(1 - coef).add_(coef * eploss)
-
 
             if done:
                 episode_length, epr, eploss = 0, 0, 0

@@ -3,7 +3,7 @@ A3C_DEFAULT_DICT = {
     # Gym Environment Parameters
     'env_type': 'gym',
     'env_name': 'CartPole-v0',
-    'env_processes': 4,
+    'env_processes': 16,
     'seed_offset': 0,
     'render_env': False,
     'max_episode_length': 1e4,
@@ -26,9 +26,9 @@ A3C_DEFAULT_DICT = {
     'gamma': 0.99,
 
     # A3C Algorithm Parameters
-    'num_steps': 20,
+    'num_steps': 10,
     'gae-lambda': 1.0,
     'value-loss-coef': 0.5,
     'entropy-coef': 0.01,
-    'grad-norm': 80
+    'grad-norm': 40
 }

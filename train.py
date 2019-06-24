@@ -35,7 +35,7 @@ if __name__ == "__main__":
     torch.manual_seed(args.getValue("pySeed"));
     
     # Build Shared Model
-    shared_model = MLPPolicy(vec_env.obs_size, vec_env.num_actions, hiddens=args.getValue("policy_hiddens"))
+    shared_model = MLPPolicy(vec_env.obs_size, vec_env.num_actions, hiddens=args.getValue("policy_hiddens")).share_memory()
     #shared_model.getMLPInfo()
 
     # Shared Optimizer
