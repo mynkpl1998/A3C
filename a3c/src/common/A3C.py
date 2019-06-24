@@ -2,6 +2,7 @@ from a3c.src.policies.A3C import MLPPolicy
 
 import gym
 import torch
+import time
 import numpy as np
 import torch.nn.functional as F
 from scipy.signal import lfilter
@@ -61,6 +62,7 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
     model = MLPPolicy(obs_size, num_actions, args.getValue("memsize"), args.getValue("policy_hiddens"))
     
     state = torch.tensor(env.reset())
+    start_time = last_disp_time = time.time()
     episode_length, epr, eploss, done = 0, 0, 0, True
 
     while info["frames"].item() <= args.getValue("num_training_frames"):
@@ -84,14 +86,21 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
             state = torch.tensor(state)
             epr += reward
             reward = np.clip(reward, 1, -1)
-            
+
             done = done or episode_length >= args.getValue("max_episode_length")
+
+            info["frames"].add_(1)
 
             if done:
                 info["episodes"] += 1
                 coef = 1 if info["episodes"][0] == 1 else (1 - args.getValue("moving_avg_coef"))
                 info["run_epr"].mul_(1 - coef).add_(coef * epr)
                 info["run_loss"].mul_(1 - coef).add_(coef * eploss)
+            
+            if rank == 0 and time.time() - last_disp_time > 60:
+                elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))
+                print("Time : %s, Episodes : %d, Frames : %d, Mean epr : %2.f, Run Loss : %.2f"%(elapsed, info["episodes"].item(), info["frames"].item(), info["run_epr"].item(), info["run_loss"].item()))
+                last_disp_time = time.time()
 
             if done:
                 episode_length, epr, eploss = 0, 0, 0
@@ -115,7 +124,6 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
         tensor([1, 2])
         
         '''
-        print("Reward Exp. Avg : %.2f, Loss Exp. Avg : %.2f"%(info["run_epr"].item(), info["run_loss"].item()))
         loss = cost_func(args, torch.cat(values), torch.cat(logps), torch.cat(actions), np.asarray(rewards))
         eploss += loss.item()
         shared_optimizer.zero_grad()
