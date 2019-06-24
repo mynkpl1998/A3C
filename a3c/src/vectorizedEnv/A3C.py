@@ -14,10 +14,10 @@ class vectorizeGym:
 
         self.processes = []
 
-    def train(self, arguments, info, shared_model):
+    def train(self, arguments, info, shared_model, shared_optimizer):
         
         for rank in range(self.num_env):
-            proc = mp.Process(target=single_env_train, args=(arguments, rank, self.obs_size, self.num_actions, info, shared_model))
+            proc = mp.Process(target=single_env_train, args=(arguments, rank, self.obs_size, self.num_actions, info, shared_model, shared_optimizer))
             proc.start()
             self.processes.append(proc)
         

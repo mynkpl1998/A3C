@@ -33,6 +33,8 @@ if __name__ == "__main__":
     
     # Set Seed
     torch.manual_seed(args.getValue("pySeed"));
+    
+    # Build Shared Model
     shared_model = MLPPolicy(vec_env.obs_size, vec_env.num_actions, hiddens=args.getValue("policy_hiddens"))
     #shared_model.getMLPInfo()
 
@@ -44,6 +46,6 @@ if __name__ == "__main__":
     info_dict = buildSharedDict(logs_keys)
     #print(info_dict)
 
-    vec_env.train(args, info_dict, shared_model)
+    vec_env.train(args, info_dict, shared_model, shared_optimizer)
 
 

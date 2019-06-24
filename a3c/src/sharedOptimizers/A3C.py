@@ -22,7 +22,4 @@ class sharedAdam(torch.optim.Adam):
                 self.state[p]['shared_steps'] += 1
                 self.state[p]['step'] = self.state[p]['shared_steps'][0] - 1
 
-        super.step(closure)
-    
-
-
+        super().step(closure)

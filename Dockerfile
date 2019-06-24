@@ -18,7 +18,7 @@ RUN bash Miniconda3-latest-Linux-x86_64.sh -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH /root/miniconda3/bin:$PATH
 RUN conda update conda
-RUN conda install python=3.6
+RUN conda install python=3.6.8
 
 # Install Dependencies
 RUN pip install -r requirements.txt
