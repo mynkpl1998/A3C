@@ -4,7 +4,7 @@ MAINTAINER "Mayank"
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install apt-utils wget
+RUN apt-get -y install apt-utils wget nano
 
 # Copy Application Code to the Container
 COPY . /home/

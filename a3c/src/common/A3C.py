@@ -40,7 +40,7 @@ def cost_func(args, values, logps, actions, rewards):
     return policy_loss + (args.getValue("value-loss-coef") * value_loss) - (args.getValue('entropy-coef') * entropy_loss)
 
 
-def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shared_optimizer):
+def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shared_optimizer, vecEnv):
     
     '''
     Funtion : Creates an idependent copy of the environment (forked by train process). Each process interacts with the environment 
@@ -50,7 +50,7 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
     env = None
 
     if(args.getValue("env_type") == "gym"):
-        env = gym.make(args.getValue("env_name"))
+        env = vecEnv.createEnv()
     else:
         raise ValueError("Only gym environments are supported for now...")
 
@@ -97,7 +97,7 @@ def single_env_train(args, rank, obs_size, num_actions, info, shared_model, shar
                 info["run_epr"].mul_(1 - coef).add_(coef * epr)
                 info["run_loss"].mul_(1 - coef).add_(coef * eploss)
             
-            if rank == 0 and time.time() - last_disp_time > 60:
+            if rank == 0 and time.time() - last_disp_time > 2:
                 elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))
                 print("Time : %s, Episodes : %d, Frames : %d, Mean epr : %2.f, Run Loss : %.2f"%(elapsed, info["episodes"].item(), info["frames"].item(), info["run_epr"].item(), info["run_loss"].item()))
                 last_disp_time = time.time()
