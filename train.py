@@ -11,11 +11,6 @@ import sys
 import torch
 import torch.multiprocessing as mp
 
-def buildSharedDict(keys):
-    k = {}
-    for key in keys:
-        k[key] = torch.DoubleTensor([0]).share_memory_()
-    return k
 
 if __name__ == "__main__":
 
@@ -32,7 +27,6 @@ if __name__ == "__main__":
 
     # Create Object to manage vectorized Environments
     vec_env = vectorizeGym(args.getValue("env_name"))
-    
     
     # Set Torch Seed
     torch.manual_seed(args.getValue("torchSeed"))
@@ -54,7 +48,6 @@ if __name__ == "__main__":
     p = mp.Process(target=test_process, args=(args.getValue("env_processes"), args, shared_model, counter, vec_env))
     p.start()
     processes.append(p)
-    
     
     # Start Training
     for rank in range(0, args.getValue('env_processes')):
