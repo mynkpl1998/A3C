@@ -7,7 +7,7 @@ env:
   - DOCKER_REPO=mynkpl1998/a3c
 
 script:
-- docker build -t $DOCKER_REPO:$TAG .
+  - docker build -t $DOCKER_REPO:$TAG .
 
 after_success:
   - echo "$DOCKER_USERNAME"
