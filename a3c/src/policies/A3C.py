@@ -2,74 +2,54 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class ConvMLPPolicy(nn.Module):
 
-    def __init__(self, channels, num_actions, memsize=256):
-        super(ConvMLPPolicy, self).__init__()
-        self.conv1 = nn.Conv2d(channels, 32, 3, stride=2, padding=1)
-        self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
-        self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
-        self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
-        self.gru = nn.GRUCell(32 * 5 * 5, memsize)
-        self.linear_critic = nn.Linear(memsize, 1)
-        self.linear_actor = nn.Linear(memsize, num_actions)
+def normalized_columns_initializer(weights, std=1.0):
+    out = torch.randn(weights.size())
+    out *= std / torch.sqrt(out.pow(2).sum(1, keepdim=True))
+    return out
 
 
-class MLPPolicy(nn.Module):
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        weight_shape = list(m.weight.data.size())
+        fan_in = np.prod(weight_shape[1:4])
+        fan_out = np.prod(weight_shape[2:4]) * weight_shape[0]
+        w_bound = np.sqrt(6. / (fan_in + fan_out))
+        m.weight.data.uniform_(-w_bound, w_bound)
+        m.bias.data.fill_(0)
+    elif classname.find('Linear') != -1:
+        weight_shape = list(m.weight.data.size())
+        fan_in = weight_shape[1]
+        fan_out = weight_shape[0]
+        w_bound = np.sqrt(6. / (fan_in + fan_out))
+        m.weight.data.uniform_(-w_bound, w_bound)
+        m.bias.data.fill_(0)
 
-    def __init__(self, obs_size, num_actions, memsize=128, hiddens=[128]):
-        self.obs_size = obs_size
-        self.memsize = memsize
+class MLP(torch.nn.Module):
+    
+    def __init__(self, obs_size, action_space):
+        super(MLP, self).__init__()
 
-        super(MLPPolicy, self).__init__()
-        self.fc_dict = {}
+        self.fc1 = nn.Linear(obs_size, 128)
+        self.gru = nn.GRUCell(128, 256)
+        self.critic_linear = nn.Linear(256, 1)
+        self.actor_linear = nn.Linear(256, action_space)
 
-        if(len(hiddens) <= 0):
-            raise ValueError("there should be at least one hidden layer in the policy")
+        self.actor_linear.weight.data = normalized_columns_initializer(
+            self.actor_linear.weight.data, 0.01)
+        self.actor_linear.bias.data.fill_(0)
+        self.critic_linear.weight.data = normalized_columns_initializer(
+            self.critic_linear.weight.data, 1.0)
+        self.critic_linear.bias.data.fill_(0)
 
-        for i, size in enumerate(hiddens):
-            layer_name = "fc_%d"%(i+1)
-            if (i == 0):
-                self.fc_dict[layer_name] = nn.Linear(obs_size, hiddens[i])
-            else:
-                self.fc_dict[layer_name] = nn.Linear(hiddens[i-1], hiddens[i])               
+        self.train()
+    
+    def forward(self, inputs):
+        inputs, hx = inputs
+        x = F.elu(self.fc1(inputs))
+        x = x.view(-1, 128)
+        hx = self.gru(x, (hx))
+        x = hx
 
-        self.gru = nn.GRUCell(hiddens[-1], memsize)
-        self.linear_critic = nn.Linear(memsize, 1)
-        self.linear_actor = nn.Linear(memsize, num_actions)
-
-    def getMLPInfo(self):
-        layer_count = 0
-        
-        # Fully Connected
-        for layer in self.fc_dict:
-            print("FC Layer %d - "%(layer_count+1), self.fc_dict[layer])
-            layer_count += 1
-        
-        # Memory
-        print("GRU - ", self.gru)
-        
-        # Linear Actor and Critic
-        print("Critic Layer - ", self.linear_critic)
-        print("Actor Layer - ", self.linear_actor)
-        
-    def forward(self, observation, history):
-        '''
-        Function : Passes the observation through fully connected layer followed by
-        a recurrent layer, then calculates the value function (critic) and logits (actor)
-        
-        Arguments
-        observation : PyTorch Tensor of type (batch, obs_size)
-        history : PyTorch Tensor of type (batch, memsize)
-
-        '''
-
-        self.fc_out = None
-        for i, layer in enumerate(self.fc_dict):
-            if(i == 0):
-                self.fc_out = F.elu(self.fc_dict[layer](observation))
-            else:
-                self.fc_out = F.elu(self.fc_dict[layer](self.fc_out))
-
-        self.hx_out = self.gru(self.fc_out, history)
-        return self.linear_critic(self.hx_out), self.linear_actor(self.hx_out), self.hx_out
+        return self.critic_linear(x), self.actor_linear(x), hx
