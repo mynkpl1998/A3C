@@ -6,6 +6,11 @@ env:
   global:
     - IMAGE_NAME=a3c
     - TAG=latest
+    - DOCKER_REPO=mynkpl1998/"$IMAGE_NAME"
 
 script:
-- docker build -t "$IMAGE_NAME":$TAG .
+- docker build -t $DOCKER_REPO:$TAG .
+
+after_success:
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push $DOCKER_REPO:$TAG
