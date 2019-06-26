@@ -6,11 +6,11 @@ env:
   global:
     - TAG=latest
     - DOCKER_REPO=mynkpl1998/a3c
+    - DOCKER_USERNAME=mynkpl1998
 
 script:
   - docker build -t $DOCKER_REPO:$TAG .
 
 after_success:
-  - echo "$DOCKER_USERNAME"
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
   - docker push $DOCKER_REPO:$TAG
