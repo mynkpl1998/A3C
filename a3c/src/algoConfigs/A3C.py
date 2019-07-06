@@ -30,5 +30,9 @@ A3C_DEFAULT_DICT = {
     'gae_lambda': 1.0,
     'value_loss_coef': 0.5,
     'entropy_coef': 0.01,
-    'grad_norm': 40
+    'grad_norm': 40,
+
+    # Logging Details
+    'exp_name': 'cartpole',
+    'log_dir': '/home/mayank/'
 }

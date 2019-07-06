@@ -1,11 +1,14 @@
 from a3c.src.policies.A3C import MLP
 
+import os
 import gym
 import torch
 import time
 import numpy as np
 import torch.nn.functional as F
 from scipy.signal import lfilter
+from tensorboardX import SummaryWriter
+
 
 def ensure_shared_grads(model, shared_model):
     for param, shared_param in zip(model.parameters(),
@@ -110,7 +113,10 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
 
 
 def test_process(rank, args, shared_model, counter, vec_env):
-    
+
+    # Create Writer Object
+    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+"/logs")
+
     torch.manual_seed(args.getValue("torchSeed") + rank)
     
     # Create a env in parallel and seed it.
@@ -154,7 +160,10 @@ def test_process(rank, args, shared_model, counter, vec_env):
         reward_sum += reward
 
         if done:
-            print("Time {}, num steps {}, FPS {:.0f}, episode reward {}, episode length {}".format(time.strftime("%Hh %Mm %Ss",time.gmtime(time.time() - start_time)),counter.value, counter.value / (time.time() - start_time), reward_sum, episode_length))
+            #print("Time {}, num steps {}, FPS {:.0f}, episode reward {}, episode length {}".format(time.strftime("%Hh %Mm %Ss",time.gmtime(time.time() - start_time)),counter.value, counter.value / (time.time() - start_time), reward_sum, episode_length))
+            writer.add_scalar("performance_curves/reward", reward_sum, counter.value)
+            writer.add_scalar("performance_curves/episode_length", episode_length, counter.value)
+            writer.file_writer.flush()
             reward_sum = 0
             episode_length = 0
             state = env.reset()

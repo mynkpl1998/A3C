@@ -4,6 +4,7 @@ from a3c.src.policies.A3C import MLP
 from a3c.src.vectorizedEnv.A3C import vectorizeGym
 from a3c.src.sharedOptimizers.A3C import sharedAdam
 from a3c.src.common.A3C import train_process, test_process
+from a3c.src.common.utils import logEssentials, launchTensorboard
 
 import os
 import gym
@@ -25,6 +26,10 @@ if __name__ == "__main__":
     args = ConfigParser(config_Path)
     #args.printConfig()
 
+    # Create Directory to store experiment logs
+    if logEssentials(args.getValue("log_dir"), args.getValue("exp_name")):
+        raise ValueError("Log directory, already exists. Please delete it or use different exp name")
+
     # Create Object to manage vectorized Environments
     vec_env = vectorizeGym(args.getValue("env_name"))
     
@@ -44,11 +49,15 @@ if __name__ == "__main__":
     processes = []
     
     # Start a test Process
-    
     p = mp.Process(target=test_process, args=(args.getValue("env_processes"), args, shared_model, counter, vec_env))
     p.start()
     processes.append(p)
     
+    # Start a Tensorboard Process
+    p = mp.Process(target=launchTensorboard, args=(args.getValue("log_dir")+"/"+args.getValue("exp_name"), ))
+    p.start()
+    processes.append(p)
+
     # Start Training
     for rank in range(0, args.getValue('env_processes')):
         p = mp.Process(target=train_process, args=(rank, args, shared_model, counter, lock, shared_optimizer, vec_env))
