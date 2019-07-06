@@ -25,3 +25,5 @@ RUN pip install -r requirements.txt
 
 # Install PyTorch Deep learning Framework
 RUN conda install pytorch-cpu torchvision-cpu -c pytorch
+
+EXPOSE 6006
