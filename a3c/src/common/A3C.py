@@ -150,12 +150,13 @@ def test_process(rank, args, shared_model, counter, vec_env):
             value, logit, hx = model((state.unsqueeze(0).float(), hx))
         
         prob = F.softmax(logit, dim=-1)
-        action = prob.max(1, keepdim=True)[1].numpy()
+        action = prob.multinomial(num_samples=1).detach()
+        #action = prob.max(1, keepdim=True)[1].numpy()
         
         if args.getValue("render_env"):
             env.render()
 
-        state, reward, done, _ = env.step(action[0, 0])
+        state, reward, done, _ = env.step(action.numpy()[0, 0])
         done = done or episode_length >= args.getValue("max_episode_length")
         reward_sum += reward
 

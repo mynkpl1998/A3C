@@ -18,12 +18,12 @@ A3C_DEFAULT_DICT = {
     'policy_hiddens': [128],
 
     # Optimizer Parameters
-    'learning_rate': 0.001,
+    'learning_rate': 0.0001,
 
     # Experiment Configs
     'num_training_frames': 8e7,
     'moving_avg_coef': 0.99,
-    'gamma': 0.99,
+    'gamma': 0.9,
 
     # A3C Algorithm Parameters
     'num_steps': 10,
