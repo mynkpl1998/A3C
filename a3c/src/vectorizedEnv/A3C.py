@@ -34,7 +34,6 @@ class NormalizedEnv(gym.ObservationWrapper):
         self.state_std = 0.0
         self.alpha = 0.9999
         self.num_stps = 0
-        print("yes")
     
     def observation(self, observation):
         self.num_stps += 1
