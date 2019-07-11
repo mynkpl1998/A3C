@@ -7,6 +7,7 @@ A3C_DEFAULT_DICT = {
     'seed_offset': 0,
     'render_env': False,
     'max_episode_length': 1e4,
+    'normalize_state': True,
 
     # PyTorch Parameters
     'torchSeed': 0,

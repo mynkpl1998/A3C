@@ -22,7 +22,7 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
     torch.manual_seed(args.getValue("torchSeed") + rank)
 
     # Create a parallel env and seed it
-    env = vec_env.createEnv()
+    env = vec_env.createEnv(args.getValue("normalize_state"))
     env.seed(args.getValue("seed_offset") + rank)
 
     # Local Copy of model
@@ -120,7 +120,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
     torch.manual_seed(args.getValue("torchSeed") + rank)
     
     # Create a env in parallel and seed it.
-    env =  vec_env.createEnv()
+    env =  vec_env.createEnv(args.getValue("normalize_state"))
     env.seed(args.getValue("seed_offset") + rank)
     
     # Local Copy of Env
