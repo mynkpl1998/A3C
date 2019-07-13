@@ -109,19 +109,40 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
 
         ensure_shared_grads(model, shared_model)
         optimizer.step()
-        #print("Yes")
+
+
+def buildCheckPointDict(items=[]):
+    checkPointDict = {}
+    for item in items:
+        checkPointDict[item] = None
+    return checkPointDict
+
+def saveCheckPoint(checkPointDict, num, args):
+    checkPointFile = args.getValue("log_dir") + "/" + args.getValue("exp_name") + "/saved_models/checkpoint-" + str(num)
+    torch.save(checkPointDict, checkPointFile)
+    print("Saved %d checkpoint !"%(num))
 
 
 def test_process(rank, args, shared_model, counter, vec_env):
 
+    # Checkpoint gap (iterations)
+    checkPointGap = 500000
+    currentGap = checkPointGap
+
     # Create Writer Object
-    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+"/logs")
+    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+ "/logs")
 
     torch.manual_seed(args.getValue("torchSeed") + rank)
     
-    # Create a env in parallel and seed it.
+    # Create a env in parallel and seed it
     env =  vec_env.createEnv(args.getValue("normalize_state"))
     env.seed(args.getValue("seed_offset") + rank)
+
+    # Create checkpoint dict
+    checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args'])
+    checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions)
+    checkPointDict["args"] = args
+    checkPointCount = 0
     
     # Local Copy of Env
     model = MLP(vec_env.obs_size, vec_env.num_actions)
@@ -152,6 +173,12 @@ def test_process(rank, args, shared_model, counter, vec_env):
         prob = F.softmax(logit, dim=-1)
         action = prob.multinomial(num_samples=1).detach()
         #action = prob.max(1, keepdim=True)[1].numpy()
+        
+        if counter.value > currentGap:
+            currentGap += checkPointGap
+            checkPointCount += 1
+            checkPointDict["state_dict"] = model.state_dict()
+            saveCheckPoint(checkPointDict, checkPointCount, args)
         
         if args.getValue("render_env"):
             env.render()
