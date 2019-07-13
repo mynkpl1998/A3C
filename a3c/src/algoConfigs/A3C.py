@@ -35,5 +35,5 @@ A3C_DEFAULT_DICT = {
 
     # Logging Details
     'exp_name': 'cartpole',
-    'log_dir': '/home/mayank/'
+    'log_dir': '/home/'
 }

@@ -4,4 +4,4 @@ A3C_Config:
   env_processes: 16
   render_env: False
   normalize_state: False
-
+  log_dir: '/home/'
