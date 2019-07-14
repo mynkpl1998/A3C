@@ -9,12 +9,16 @@ class vectorizeGym:
         self.obs_size = np.array(self.local_env.observation_space.low).flatten().shape[0]
         self.num_actions = self.local_env.action_space.n
     
+    '''
     def createEnv(self, normalizedEnv = True):
         if normalizedEnv:
             return NormalizedEnv(gym.make(self.env_name))
         else:
             return gym.make(self.env_name)
+    '''
 
+    def createEnv(self, normalizedEnv):
+        return gym.make(self.env_name)
 
 class NormalizedEnv(gym.ObservationWrapper):
 
@@ -34,6 +38,11 @@ class NormalizedEnv(gym.ObservationWrapper):
         self.state_std = 0.0
         self.alpha = 0.9999
         self.num_stps = 0
+    
+    def setProperties(self, mean, std, numSteps):
+        self.state_mean = mean
+        self.state_std = std
+        self.num_stps = numSteps
     
     def observation(self, observation):
         self.num_stps += 1

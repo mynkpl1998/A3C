@@ -139,9 +139,10 @@ def test_process(rank, args, shared_model, counter, vec_env):
     env.seed(args.getValue("seed_offset") + rank)
 
     # Create checkpoint dict
-    checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args'])
+    checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args', 'env'])
     checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions)
     checkPointDict["args"] = args
+    checkPointDict["env"] = vec_env
     checkPointCount = 0
     
     # Local Copy of Env
