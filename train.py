@@ -10,8 +10,11 @@ import os
 import gym
 import sys
 import torch
+import argparse
 import torch.multiprocessing as mp
 
+parser = argparse.ArgumentParser(description="Script to start training")
+parser.add_argument("--config-file", type=str, help="experiment configuration file")
 
 if __name__ == "__main__":
 
@@ -22,10 +25,11 @@ if __name__ == "__main__":
     os.environ['OMP_NUM_THREADS'] = '1'
     os.environ['CUDA_VISIBLE_DEVICES'] = ""
     
-    config_Path = "sample_configuration.yml"
-    args = ConfigParser(config_Path)
+    args = parser.parse_args()
+    args = ConfigParser(args.config_file)
     #args.printConfig()
 
+    
     # Create Directory to store experiment logs
     if logEssentials(args.getValue("log_dir"), args.getValue("exp_name")):
         raise ValueError("Log directory, already exists. Please delete it or use different exp name")
@@ -66,3 +70,5 @@ if __name__ == "__main__":
     
     for p in processes:
         p.join()
+    
+    
