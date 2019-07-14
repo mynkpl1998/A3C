@@ -135,7 +135,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
     torch.manual_seed(args.getValue("torchSeed") + rank)
     
     # Create a env in parallel and seed it
-    env =  vec_env.createEnv(args.getValue("normalize_state"))
+    env = vec_env.createEnv(args.getValue("normalize_state"))
     env.seed(args.getValue("seed_offset") + rank)
 
     # Create checkpoint dict
@@ -156,6 +156,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
     start_time = time.time()
 
     episode_length = 0
+    episode_policy_entropy = 0
 
     while True:
 
@@ -172,6 +173,8 @@ def test_process(rank, args, shared_model, counter, vec_env):
         
         prob = F.softmax(logit, dim=-1)
         action = prob.multinomial(num_samples=1).detach()
+        episode_policy_entropy += -(torch.log(prob).mul(prob).sum().item())
+
         #action = prob.max(1, keepdim=True)[1].numpy()
         
         if counter.value > currentGap:
@@ -191,8 +194,10 @@ def test_process(rank, args, shared_model, counter, vec_env):
             #print("Time {}, num steps {}, FPS {:.0f}, episode reward {}, episode length {}".format(time.strftime("%Hh %Mm %Ss",time.gmtime(time.time() - start_time)),counter.value, counter.value / (time.time() - start_time), reward_sum, episode_length))
             writer.add_scalar("performance_curves/reward", reward_sum, counter.value)
             writer.add_scalar("performance_curves/episode_length", episode_length, counter.value)
+            writer.add_scalar("policy_characterstics/entropy", episode_policy_entropy/episode_length, counter.value)
             writer.file_writer.flush()
             reward_sum = 0
+            episode_policy_entropy = 0.0
             episode_length = 0
             state = env.reset()
 

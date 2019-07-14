@@ -8,6 +8,9 @@ def warnMessage(msgStr):
 
 def infoMessage(msgStr):
     print(info(bold(blue(msgStr))))
+
+def checkFileExists(path):
+    return os.path.exists(path)
     
 def logEssentials(dir_path, exp_name):
 
