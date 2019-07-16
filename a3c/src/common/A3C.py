@@ -26,7 +26,7 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
     env.seed(args.getValue("seed_offset") + rank)
 
     # Local Copy of model
-    model = MLP(vec_env.obs_size, vec_env.num_actions)
+    model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
 
     model.train()
 
@@ -42,7 +42,7 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
         model.load_state_dict(shared_model.state_dict())
 
         if done:
-            hx = torch.zeros(1, 256)
+            hx = torch.zeros(1, args.getValue("memsize"))
         else:
             hx = hx.detach()
         

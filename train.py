@@ -58,7 +58,7 @@ if __name__ == "__main__":
     p.start()
     processes.append(p)
     
-    '''
+    
     # Start a Tensorboard Process
     p = mp.Process(target=launchTensorboard, args=(args.getValue("log_dir")+"/"+args.getValue("exp_name"), ))
     p.start()
@@ -69,7 +69,6 @@ if __name__ == "__main__":
         p = mp.Process(target=train_process, args=(rank, args, shared_model, counter, lock, shared_optimizer, vec_env))
         p.start()
         processes.append(p)
-    '''
 
     for p in processes:
         p.join()
