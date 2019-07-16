@@ -6,6 +6,8 @@ RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get -y install apt-utils wget nano
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Install full open ai gym dependencies and library
 RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb git-all
 RUN git clone https://github.com/openai/gym.git
