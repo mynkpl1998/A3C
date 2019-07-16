@@ -64,7 +64,7 @@ class rollouts:
             episode_data[stepStr] = {}
 
             if done:
-                hx = torch.zeros(1, 256)
+                hx = torch.zeros(1, self.args.getValue("memsize"))
             else:
                 hx = hx.detach()
             

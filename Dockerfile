@@ -19,19 +19,21 @@ RUN conda install python=3.6.8
 # Install PyTorch Deep learning Framework
 RUN conda install pytorch-cpu torchvision-cpu -c pytorch
 
-WORKDIR /home/
+RUN mkdir -p /home/extras
+RUN mkdir -p /home/app
 
 # Install full open ai gym dependencies and library
 RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb git-all
+RUN cd /home/extras/
 RUN git clone https://github.com/openai/gym.git
 RUN cd gym
 RUN pip install -e '.[atari]'
 
 # Copy Application Code to the Container
-COPY . /home/
+COPY . /home/app/
 
 # Set the working directory to the code directory
-WORKDIR /home/
+WORKDIR /home/app/
 
 # Install Dependencies
 RUN pip install -r requirements.txt

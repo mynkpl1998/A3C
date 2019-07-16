@@ -13,7 +13,7 @@ A3C_Config:
   torchSeed: 0
 
   # Policy Parameter
-  memsize: 128
+  memsize: 256
 
   # MLP Policy Parameter
   hidden : 128
