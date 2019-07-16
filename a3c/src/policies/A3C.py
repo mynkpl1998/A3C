@@ -30,7 +30,20 @@ class MLPv2(torch.nn.Module):
 
     def __init__(self, obs_size, action_space, hiddens=[128], memsize=256):
         super(MLPv2, self).__init__()
+        self.obs_size = obs_size
+        self.action_space = action_space
 
+        self.fc_dict = {}
+    
+    def buildFCLayers(self, hiddens):
+        total_layers = 0
+        
+        # First Layer
+        self.fc_dict["fc_%d"%(total_layers+1)] = nn.Linear(self.obs_size, hiddens[0])
+
+        # Intermediate Layers
+        for hidden in hiddens:
+            input_size = 
         
 
 class MLP(torch.nn.Module):

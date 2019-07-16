@@ -16,9 +16,6 @@ ENV PATH /root/miniconda3/bin:$PATH
 RUN conda update conda
 RUN conda install python=3.6.8
 
-# Install Dependencies
-RUN pip install -r requirements.txt
-
 # Install PyTorch Deep learning Framework
 RUN conda install pytorch-cpu torchvision-cpu -c pytorch
 
@@ -33,5 +30,8 @@ COPY . /home/
 
 # Set the working directory to the code directory
 WORKDIR /home/
+
+# Install Dependencies
+RUN pip install -r requirements.txt
 
 EXPOSE 6006
