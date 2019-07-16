@@ -13,10 +13,10 @@ A3C_Config:
   torchSeed: 0
 
   # Policy Parameter
-  memsize: 256
+  memsize: 128
 
   # MLP Policy Parameter
-  policy_hiddens : [128]
+  hidden : 128
 
   # Optimizer Parameters
   learning_rate: 0.0001

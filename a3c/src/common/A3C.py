@@ -140,13 +140,13 @@ def test_process(rank, args, shared_model, counter, vec_env):
 
     # Create checkpoint dict
     checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args', 'env'])
-    checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions)
+    checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
     checkPointDict["args"] = args
     checkPointDict["env"] = vec_env
     checkPointCount = 0
     
     # Local Copy of Env
-    model = MLP(vec_env.obs_size, vec_env.num_actions)
+    model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
     model.eval()
 
     state = env.reset()
@@ -165,7 +165,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
 
         if done:
             model.load_state_dict(shared_model.state_dict())
-            hx = torch.zeros(1, 256)
+            hx = torch.zeros(1, args.getValue("memsize"))
         else:
             hx = hx.detach()
         

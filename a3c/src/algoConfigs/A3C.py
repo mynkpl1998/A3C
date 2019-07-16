@@ -16,7 +16,7 @@ A3C_DEFAULT_DICT = {
     'memsize': 256,
 
     # MLP Policy Parameters
-    'policy_hiddens': [128],
+    'hidden': 128,
 
     # Optimizer Parameters
     'learning_rate': 0.0001,

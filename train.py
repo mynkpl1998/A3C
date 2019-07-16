@@ -41,7 +41,8 @@ if __name__ == "__main__":
     torch.manual_seed(args.getValue("torchSeed"))
     
     # Build Shared Model
-    shared_model = MLP(vec_env.obs_size, vec_env.num_actions).share_memory()
+    shared_model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize")).share_memory()
+    
     
     # Shared Optimizer
     shared_optimizer = sharedAdam(shared_model.parameters(), lr=args.getValue("learning_rate"))
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     p.start()
     processes.append(p)
     
+    '''
     # Start a Tensorboard Process
     p = mp.Process(target=launchTensorboard, args=(args.getValue("log_dir")+"/"+args.getValue("exp_name"), ))
     p.start()
@@ -67,8 +69,7 @@ if __name__ == "__main__":
         p = mp.Process(target=train_process, args=(rank, args, shared_model, counter, lock, shared_optimizer, vec_env))
         p.start()
         processes.append(p)
-    
+    '''
+
     for p in processes:
         p.join()
-    
-    
