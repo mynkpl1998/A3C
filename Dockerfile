@@ -1,10 +1,16 @@
 FROM ubuntu:18.04
 
-MAINTAINER "Mayank"
+MAINTAINER "Mayank Kumar Pal (mayank15147@iiitd.ac.in)"
 
 RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get -y install apt-utils wget nano
+
+# Install full open ai gym dependencies and library
+RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb git-all
+RUN git clone https://github.com/openai/gym.git
+RUN cd gym
+RUN pip install -e '.[atari]'
 
 # Copy Application Code to the Container
 COPY . /home/

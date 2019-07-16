@@ -1,7 +1,0 @@
-A3C_Config:
-  env_type: 'gym'
-  env_name: 'CartPole-v0'
-  env_processes: 16
-  render_env: False
-  normalize_state: False
-  log_dir: '/home/mayank/'
