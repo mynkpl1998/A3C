@@ -26,6 +26,13 @@ def weights_init(m):
         m.weight.data.uniform_(-w_bound, w_bound)
         m.bias.data.fill_(0)
 
+class MLPv2(torch.nn.Module):
+
+    def __init__(self, obs_size, action_space, hiddens=[128], memsize=256):
+        super(MLPv2, self).__init__()
+
+        
+
 class MLP(torch.nn.Module):
     
     def __init__(self, obs_size, action_space):

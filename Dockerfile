@@ -8,18 +8,6 @@ RUN apt-get -y install apt-utils wget nano
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Install full open ai gym dependencies and library
-RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb git-all
-RUN git clone https://github.com/openai/gym.git
-RUN cd gym
-RUN pip install -e '.[atari]'
-
-# Copy Application Code to the Container
-COPY . /home/
-
-# Set the working directory to the code directory
-WORKDIR /home/
-
 # Minconda python3.6 Installation
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -b
@@ -33,5 +21,17 @@ RUN pip install -r requirements.txt
 
 # Install PyTorch Deep learning Framework
 RUN conda install pytorch-cpu torchvision-cpu -c pytorch
+
+# Install full open ai gym dependencies and library
+RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb git-all
+RUN git clone https://github.com/openai/gym.git
+RUN cd gym
+RUN pip install -e '.[atari]'
+
+# Copy Application Code to the Container
+COPY . /home/
+
+# Set the working directory to the code directory
+WORKDIR /home/
 
 EXPOSE 6006
