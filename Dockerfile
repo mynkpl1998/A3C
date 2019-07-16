@@ -27,7 +27,7 @@ RUN apt install -y python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet p
 RUN cd /home/extras/
 RUN git clone https://github.com/openai/gym.git
 RUN cd gym
-RUN pip install -e '.[atari]'
+RUN pip install -e .[atari]
 
 # Copy Application Code to the Container
 COPY . /home/app/
