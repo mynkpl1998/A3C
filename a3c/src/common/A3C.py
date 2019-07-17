@@ -5,6 +5,7 @@ import gym
 import torch
 import time
 import numpy as np
+from torchviz import make_dot
 import torch.nn.functional as F
 from scipy.signal import lfilter
 from tensorboardX import SummaryWriter
@@ -97,7 +98,7 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
             value_loss = value_loss + 0.5 * advantage.pow(2)
 
             # Generalized Adavantage Estimation
-            delta_t = rewards[i] + args.getValue("gamma") * values[i+1] - values[i]
+            delta_t = rewards[i] + args.getValue("gamma") * values[i+1].detach() - values[i].detach()
             gae = gae * args.getValue("gamma") * args.getValue("gae_lambda") + delta_t
 
             policy_loss = policy_loss - log_probs[i] * gae.detach() - args.getValue("entropy_coef") * entropies[i]
@@ -129,15 +130,15 @@ def test_process(rank, args, shared_model, counter, vec_env):
     checkPointGap = 500000
     currentGap = checkPointGap
 
-    # Create Writer Object
-    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+ "/logs")
-
     torch.manual_seed(args.getValue("torchSeed") + rank)
     
     # Create a env in parallel and seed it
     env = vec_env.createEnv(args.getValue("normalize_state"))
     env.seed(args.getValue("seed_offset") + rank)
 
+    # Create Writer Object
+    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+ "/logs")
+    
     # Create checkpoint dict
     checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args', 'env'])
     checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
