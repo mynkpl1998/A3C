@@ -61,13 +61,11 @@ if __name__ == "__main__":
     p.start()
     processes.append(p)
 
-    '''
     # Start Training
     for rank in range(0, args.getValue('env_processes')):
         p = mp.Process(target=train_process, args=(rank, args, shared_model, counter, lock, shared_optimizer, vec_env))
         p.start()
         processes.append(p)
-    '''
     
     for p in processes:
         p.join()
