@@ -16,7 +16,7 @@ A3C_Config:
   memsize: 256
 
   # MLP Policy Parameter
-  hidden : 256
+  hidden : 128
 
   # Optimizer Parameters
   learning_rate: 0.0001

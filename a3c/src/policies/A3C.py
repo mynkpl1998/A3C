@@ -36,6 +36,9 @@ class MLP(torch.nn.Module):
         self.memsize = memsize
 
         self.fc1 = nn.Linear(obs_size, hidden)
+        self.fc2 = nn.Linear(hidden, hidden)
+        self.fc3 = nn.Linear(hidden, hidden)
+
         self.gru = nn.GRUCell(hidden, memsize)
         self.critic_linear = nn.Linear(memsize, 1)
         self.actor_linear = nn.Linear(memsize, action_space)
@@ -52,6 +55,10 @@ class MLP(torch.nn.Module):
     def forward(self, inputs):
         inputs, hx = inputs
         x = F.elu(self.fc1(inputs))
+        x = x.view(-1, self.hidden)
+        x = F.elu(self.fc2(x))
+        x = x.view(-1, self.hidden)
+        x = F.elu(self.fc3(x))
         x = x.view(-1, self.hidden)
         hx = self.gru(x, (hx))
         x = hx
