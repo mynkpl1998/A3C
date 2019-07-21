@@ -56,7 +56,6 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
             
             episode_length += 1
             value, logit, hx = model((state.unsqueeze(0).float(), hx))
-
             prob = F.softmax(logit, dim=-1)
             log_prob = F.log_softmax(logit, dim=-1)
             entropy = -(log_prob * prob).sum(1, keepdim=True)
@@ -104,7 +103,6 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
             policy_loss = policy_loss - log_probs[i] * gae.detach() - args.getValue("entropy_coef") * entropies[i]
         
         optimizer.zero_grad()
-
         (policy_loss + args.getValue("value_loss_coef") * value_loss).backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.getValue("grad_norm"))
 

@@ -9,16 +9,25 @@ class vectorizeGym:
         self.obs_size = np.array(self.local_env.observation_space.low).flatten().shape[0]
         self.num_actions = self.local_env.action_space.n
     
-    '''
-    def createEnv(self, normalizedEnv = True):
+    def createEnv(self, normalizedEnv=False):
         if normalizedEnv:
-            return NormalizedEnv(gym.make(self.env_name))
+            return MinMaxNormalizer(gym.make(self.env_name))
         else:
             return gym.make(self.env_name)
     '''
-
     def createEnv(self, normalizedEnv):
         return gym.make(self.env_name)
+    '''
+
+class MinMaxNormalizer(gym.ObservationWrapper):
+
+    def __init__(self, env=None):
+        super(MinMaxNormalizer, self).__init__(env)
+        self.min = env.observation_space.low
+        self.max = env.observation_space.high
+    
+    def observation(self, obs):
+        return (obs - self.min)/(self.max - self.min)
 
 class NormalizedEnv(gym.ObservationWrapper):
 
