@@ -8,7 +8,11 @@
 
 This is the high quality implementation of the A3C Reinforcement Learning Algorithm. The mail goal of this implementation is to make experimentation easy and effective.
 
-# Example Usage
+
+# Trained Policies
+CartPole             |  Lunar Lander          
+:-------------------------:|:-------------------------:
+![](images/cartpole.gif)  |  ![](images/lunarLandar.gif) 
 
 # Installation
 
