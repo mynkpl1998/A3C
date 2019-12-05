@@ -1,7 +1,7 @@
 A3C_Config:
 
   # Gym Environment parameters
-  env_type: 'gym'
+  env_type: 'custom'
   env_name: 'CartPole-v0'
   env_processes: 16
   seed_offset: 0
@@ -13,7 +13,7 @@ A3C_Config:
   torchSeed: 0
 
   # Policy Type
-  policy-type: 'mlp'
+  policy-type: 'cnn'
 
   # Policy Parameter
   memsize: 256
@@ -36,5 +36,5 @@ A3C_Config:
   grad_norm: 40
 
   # Logging Details
-  exp_name: 'cartpole'
+  exp_name: 'catch'
   log_dir: '/home/mayank/'

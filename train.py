@@ -1,6 +1,6 @@
 from a3c.src.algorithms.A3C import A3C
 from a3c.src.configParser.A3C import ConfigParser
-from a3c.src.policies.A3C import MLP
+from a3c.src.policies.A3C import MLP, cnnPolicy
 from a3c.src.vectorizedEnv.A3C import vectorizeGym
 from a3c.src.sharedOptimizers.A3C import sharedAdam
 from a3c.src.common.A3C import train_process, test_process
@@ -27,12 +27,15 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     args = ConfigParser(args.config_file)
-    #args.printConfig()
+    args.printConfig()
     
     # Create Directory to store experiment logs
     if logEssentials(args.getValue("log_dir"), args.getValue("exp_name")):
         raise ValueError("Log directory, already exists. Please delete it or use different exp name")
 
+    if args.getValue("env_type") == "custom":
+        pass
+    
     # Create Object to manage vectorized Environments
     vec_env = vectorizeGym(args.getValue("env_name"))
     
@@ -40,8 +43,15 @@ if __name__ == "__main__":
     torch.manual_seed(args.getValue("torchSeed"))
     
     # Build Shared Model
-    shared_model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize")).share_memory()
+    if args.getValue('policy-type') == 'mlp':
+        shared_model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize")).share_memory()
+    elif args.getValue('policy-type') == 'cnn':
+        shared_model = cnnPolicy(vec_env.obs_size, vec_env.num_actions, args.getValue('hidden'), args.getValue('memsize')).share_memory()
+    else:
+        raise ValueError("Invalid policy type - %s"%(args.getValue('policy-type')))
     
+    print(shared_model)
+
     # Shared Optimizer
     shared_optimizer = sharedAdam(shared_model.parameters(), lr=args.getValue("learning_rate"))
     shared_optimizer.share_memory()
@@ -51,11 +61,13 @@ if __name__ == "__main__":
 
     processes = []
     
+    '''
     # Start a test Process
     p = mp.Process(target=test_process, args=(args.getValue("env_processes"), args, shared_model, counter, vec_env))
     p.start()
     processes.append(p)
     
+
     # Start a Tensorboard Process
     p = mp.Process(target=launchTensorboard, args=(args.getValue("log_dir")+"/"+args.getValue("exp_name"), ))
     p.start()
@@ -66,6 +78,7 @@ if __name__ == "__main__":
         p = mp.Process(target=train_process, args=(rank, args, shared_model, counter, lock, shared_optimizer, vec_env))
         p.start()
         processes.append(p)
-    
+    '''
+
     for p in processes:
         p.join()

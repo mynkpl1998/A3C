@@ -15,6 +15,9 @@ A3C_DEFAULT_DICT = {
     # Common Policy Parameters
     'memsize': 256,
 
+    # Policy tyep
+    'policy-type': 'mlp',
+
     # MLP Policy Parameters
     'hidden': 128,
 

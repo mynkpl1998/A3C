@@ -35,3 +35,5 @@ def launchTensorboard(launch_dir):
     infoMessage("Starting tesorboard at localhost:6006")
     os.system(launchCmd)
     
+def loadCustomEnv(modulePath):
+    print(modulePath)
