@@ -1,12 +1,15 @@
 import gym
 import numpy as np
 import torch.multiprocessing as mp
+from a3c.src.common.utils import importCustomEnv
 
 class vectorizeGym:
-    def __init__(self, env_name):
+    def __init__(self, env_name, env_type, env_module):
+        if env_type == "custom":
+            importCustomEnv(env_module)
         self.env_name = env_name
-        self.local_env = gym.make(env_name)
-        self.obs_size = np.array(self.local_env.observation_space.low).flatten().shape[0]
+        self.local_env = gym.make(env_name, kFrames=1, render=True)
+        self.obs_size = self.local_env.observation_space.low.shape
         self.num_actions = self.local_env.action_space.n
     
     '''
@@ -18,7 +21,7 @@ class vectorizeGym:
     '''
 
     def createEnv(self, normalizedEnv):
-        return gym.make(self.env_name)
+        return gym.make(self.env_name, kFrames=1,render=False)
 
 class NormalizedEnv(gym.ObservationWrapper):
 

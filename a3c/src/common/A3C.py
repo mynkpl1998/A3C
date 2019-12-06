@@ -1,4 +1,4 @@
-from a3c.src.policies.A3C import MLP
+from a3c.src.policies.A3C import MLP, cnnPolicy
 
 import os
 import gym
@@ -27,12 +27,14 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
     env.seed(args.getValue("seed_offset") + rank)
 
     # Local Copy of model
-    model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
-
+    if args.getValue('policy-type') == 'cnn':        
+        model = cnnPolicy(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
+    else:
+        model = MLP(vec_env.obs_size[0], vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
     model.train()
 
     state = env.reset()
-    state = torch.from_numpy(state)
+    state = torch.from_numpy(state).transpose(2, 0)
     done = True
 
     episode_length = 0
@@ -74,7 +76,7 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
                 episode_length = 0
                 state = env.reset()
             
-            state = torch.from_numpy(state)
+            state = torch.from_numpy(state).transpose(2, 0)
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -137,21 +139,27 @@ def test_process(rank, args, shared_model, counter, vec_env):
     env.seed(args.getValue("seed_offset") + rank)
 
     # Create Writer Object
-    writer = SummaryWriter(logdir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+ "/logs")
+    writer = SummaryWriter(log_dir=args.getValue("log_dir")+"/"+args.getValue("exp_name")+ "/logs")
     
     # Create checkpoint dict
     checkPointDict = buildCheckPointDict(['model', 'state_dict', 'args', 'env'])
-    checkPointDict["model"] = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
+    if args.getValue("policy-type") == 'cnn':
+        checkPointDict["model"] = cnnPolicy(vec_env.obs_size, vec_env.num_actions, args.getValue('hidden'), args.getValue('memsize'))
+    else:
+        checkPointDict["model"] = MLP(vec_env.obs_size[0], vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
     checkPointDict["args"] = args
     checkPointDict["env"] = vec_env
     checkPointCount = 0
     
     # Local Copy of Env
-    model = MLP(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
+    if args.getValue('policy-type') == 'cnn':        
+        model = cnnPolicy(vec_env.obs_size, vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
+    else:
+        model = MLP(vec_env.obs_size[0], vec_env.num_actions, args.getValue("hidden"), args.getValue("memsize"))
     model.eval()
 
     state = env.reset()
-    state = torch.from_numpy(state)
+    state = torch.from_numpy(state).transpose(2, 0)
     reward_sum = 0
     done = True
 
@@ -185,7 +193,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
             checkPointDict["state_dict"] = model.state_dict()
             saveCheckPoint(checkPointDict, checkPointCount, args)
         
-        if args.getValue("render_env"):
+        if args.getValue("render_env") and args.getValue("env_type") == 'gym':
             env.render()
 
         state, reward, done, _ = env.step(action.numpy()[0, 0])
@@ -203,4 +211,4 @@ def test_process(rank, args, shared_model, counter, vec_env):
             episode_length = 0
             state = env.reset()
 
-        state = torch.from_numpy(state)
+        state = torch.from_numpy(state).transpose(2, 0)

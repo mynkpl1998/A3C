@@ -2,11 +2,12 @@ A3C_Config:
 
   # Gym Environment parameters
   env_type: 'custom'
-  env_name: 'CartPole-v0'
+  env_name: 'catch-v0'
+  env_module: 'gym_catch'
   env_processes: 16
   seed_offset: 0
   render_env: True
-  max_episode_length: 10000
+  max_episode_length: 100
   normalize_state: False
 
   # PyTorch Parameters

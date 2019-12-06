@@ -1,5 +1,6 @@
 import os
 import shutil
+import importlib
 import time
 from huepy import bold, bad, red, blue, info
 
@@ -35,5 +36,6 @@ def launchTensorboard(launch_dir):
     infoMessage("Starting tesorboard at localhost:6006")
     os.system(launchCmd)
     
-def loadCustomEnv(modulePath):
-    print(modulePath)
+def importCustomEnv(moduleName):
+    importlib.import_module(moduleName)
+    

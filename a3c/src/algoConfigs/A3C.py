@@ -3,6 +3,7 @@ A3C_DEFAULT_DICT = {
     # Gym Environment Parameters
     'env_type': 'gym',
     'env_name': 'CartPole-v0',
+    'env_module': None,
     'env_processes': 16,
     'seed_offset': 0,
     'render_env': False,
