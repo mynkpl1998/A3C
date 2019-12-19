@@ -51,7 +51,6 @@ if __name__ == "__main__":
     shared_optimizer = sharedAdam(shared_model.parameters(), lr=args.getValue("learning_rate"))
     shared_optimizer.share_memory()
     
-    
     counter = mp.Value('i', 0)
     lock = mp.Lock()
 
@@ -62,11 +61,11 @@ if __name__ == "__main__":
     p.start()
     processes.append(p)
     
+    
     # Start a Tensorboard Process
     p = mp.Process(target=launchTensorboard, args=(args.getValue("log_dir")+"/"+args.getValue("exp_name"), ))
     p.start()
     processes.append(p)
-
     
     # Start Training
     for rank in range(0, args.getValue('env_processes')):

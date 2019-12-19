@@ -34,7 +34,11 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
     model.train()
 
     state = env.reset()
-    state = torch.from_numpy(state).transpose(2, 0)
+    if args.getValue('policy-type') == 'cnn':
+         # Converts the channel last to channels first
+        state = torch.from_numpy(state).transpose(2, 0)
+    else:
+        state = torch.from_numpy(state)
     done = True
 
     episode_length = 0
@@ -76,7 +80,11 @@ def train_process(rank, args, shared_model, counter, lock, optimizer, vec_env):
                 episode_length = 0
                 state = env.reset()
             
-            state = torch.from_numpy(state).transpose(2, 0)
+            if args.getValue('policy-type') == 'cnn':
+                # Converts the channel last to channels first
+                state = torch.from_numpy(state).transpose(2, 0)
+            else:
+                state = torch.from_numpy(state)
             values.append(value)
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -159,7 +167,10 @@ def test_process(rank, args, shared_model, counter, vec_env):
     model.eval()
 
     state = env.reset()
-    state = torch.from_numpy(state).transpose(2, 0)
+    if args.getValue('policy-type') == 'cnn':
+        state = torch.from_numpy(state).transpose(2, 0)
+    else:
+        state = torch.from_numpy(state)
     reward_sum = 0
     done = True
 
@@ -211,4 +222,7 @@ def test_process(rank, args, shared_model, counter, vec_env):
             episode_length = 0
             state = env.reset()
 
-        state = torch.from_numpy(state).transpose(2, 0)
+        if args.getValue('policy-type') == 'cnn':
+            state = torch.from_numpy(state).transpose(2, 0)
+        else:
+            state = torch.from_numpy(state)

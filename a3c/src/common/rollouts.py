@@ -1,11 +1,11 @@
 import torch
-from a3c.src.common.utils import checkFileExists
 import torch.nn.functional as F
-
+from a3c.src.common.utils import saliencyMaps
+from a3c.src.common.utils import checkFileExists
 
 class rollouts:
 
-    def __init__(self, checkpointPath):
+    def __init__(self, checkpointPath, maps=0):
         self.checkpointDict = self.loadCheckpoint(checkpointPath)
         self.model = self.reBuildModel(self.checkpointDict)
         self.args = self.checkpointDict["args"]
@@ -15,6 +15,12 @@ class rollouts:
         self.episode_step = 0
         self.prevState = None
         self.nextState = None
+        self.maps = maps
+        if self.maps == 1 and self.args.getValue('policy-type') == 'cnn':
+            self.mapObject = self.getMapsObject()
+    
+    def getMapsObject(self,):
+        return saliencyMaps(self.model)
 
     def reBuildModel(self, checkpointDict):
         '''
@@ -46,8 +52,12 @@ class rollouts:
 
     def runEpisode(self, render=True):
         
+        history = {'ins': [], 'logits': [], 'values': [], 'outs':[], 'hx': []}
         state = self.env.reset()
-        state = torch.from_numpy(state)
+        if self.args.getValue('policy-type') == 'cnn':
+            state = torch.from_numpy(state).transpose(2, 0)
+        else:
+            state = torch.from_numpy(state)
         episode_data = {}
 
         reward_sum = 0
@@ -72,11 +82,13 @@ class rollouts:
             episode_data[stepStr]["state"] = state.clone().numpy()
         
             value, logit, hx = self.model((state.unsqueeze(0).float(), hx))
+            if self.args.getValue('policy-type') == 'cnn' and self.maps == 1:
+                self.mapObject.forward((state.unsqueeze(0).float(), hx))
 
             prob = F.softmax(logit, dim=-1)
             action = prob.multinomial(num_samples=1).detach()
         
-            if render:
+            if render and self.args.getValue('env_type') == 'gym':
                 self.env.render()
 
             episode_data[stepStr]["act_dist"] = prob.clone().numpy()
@@ -86,15 +98,26 @@ class rollouts:
             done = done or episode_length >= self.args.getValue("max_episode_length")
             reward_sum += reward
 
-            state = torch.from_numpy(state)
-
+            if self.args.getValue('policy-type') == 'cnn':
+                state = torch.from_numpy(state).transpose(2, 0)
+            else:
+                state = torch.from_numpy(state)
+        
             episode_data[stepStr]["reward"] = reward
             episode_data[stepStr]["next_state"] = state.clone().numpy()
             episode_data[stepStr]["done"] = done
+
+            # Save info
+            history['ins'].append(state.data.numpy())
+            history['hx'].append(hx.squeeze(0).data.numpy())
+            history['logits'].append(logit.data.numpy()[0])
+            history['values'].append(value.data.numpy()[0])
+            history['outs'].append(prob.data.numpy()[0])
+            
 
             if done:
                 episode_data["episode_length"] = episode_length
                 episode_data["cum_reward"] = reward_sum
                 break
         
-        return episode_data
+        return episode_data, history
